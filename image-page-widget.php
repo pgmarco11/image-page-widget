@@ -47,8 +47,46 @@ class img_page_widget extends WP_Widget {
 
 		wp_enqueue_script('media-upload');
 		wp_enqueue_script('thickbox');
-		wp_enqueue_script('mfc-media-upload', plugin_dir_url(__FILE__) . 'mfc-media-upload.js', array( 'jquery' ), true);
+		wp_enqueue_script('mfc-media-upload', plugin_dir_url(__FILE__) . 'js/mfc-media-upload.js', 
+		array( 'jquery' ), true);
 		wp_enqueue_style('thickbox');
+
+		wp_enqueue_style( 'wp-color-picker' );
+
+		    wp_enqueue_script(
+		        'iris',
+		        admin_url( 'js/iris.min.js' ),
+		        array( 
+		            'jquery-ui-draggable', 
+		            'jquery-ui-slider', 
+		            'jquery-touch-punch'
+		        ),
+		        false,
+		        1
+		    );
+
+			// Now we can enqueue the color-picker script itself, 
+		    //    naming iris.js as its dependency
+		    wp_enqueue_script(
+		        'wp-color-picker',
+		        admin_url( 'js/color-picker.min.js' ),
+		        array( 'iris' ),
+		        false,
+		        1
+		    );
+
+		    // Manually passing text strings to the JavaScript
+		    $colorpicker_l10n = array(
+		        'clear' => __( 'Clear' ),
+		        'defaultString' => __( 'Default' ),
+		        'pick' => __( 'Select Color' ),
+		        'current' => __( 'Current Color' ),
+		    );
+		    wp_localize_script( 
+		        'wp-color-picker',
+		        'wpColorPickerL10n', 
+		        $colorpicker_l10n 
+		    ); 
 
 
 	}
@@ -65,6 +103,11 @@ class img_page_widget extends WP_Widget {
 	 */
 	public function update( $new_instance, $old_instance){
 		
+		$instance = $new_instance;
+
+		$instance['background_color'] = $new_instance['background_color'];
+		$instance['font_color'] = $new_instance['font_color'];
+
 		return $new_instance;
 
 	}
@@ -152,6 +195,46 @@ class img_page_widget extends WP_Widget {
 	</p>
 
 	<p>
+	<?php
+		$defaults = array(
+            'background_color' => '#e3e3e3',
+            'font_color' => '#ffffff'
+        );
+
+        // Merge the user-selected arguments with the defaults
+        $instance = wp_parse_args( (array) $instance, $defaults );
+
+         ?> 
+
+        <script type='text/javascript'>
+
+        	jQuery(document).ready(function($) { 
+	            jQuery('.my-color-picker').on('focus', function(){
+	            	var params = {
+	        			change: function(e, ui){
+	        				jQuery(this).val( ui.color.toString() );
+	        				jQuery(this).trigger('change');
+	        			},
+	        		}
+	                jQuery(this).wpColorPicker(params);	                
+			    }); 
+		    }); 
+       
+        </script> 
+        <br>
+		 <label for="<?php echo esc_attr( $this->get_field_name('background_color')); ?>"><?php _e( 'Background Color:' ); ?></label>
+        <br>
+        <input class="my-color-picker" type="text" id="<?php echo $this->get_field_id( 'background_color' ); ?>" name="<?php echo $this->get_field_name( 'background_color' ); ?>" 
+        value="<?php echo esc_attr( $instance['background_color'] ); ?>" /> 
+        <br>
+		 <label for="<?php echo esc_attr( $this->get_field_name('font_color')); ?>"><?php _e( 'Font Color:' ); ?></label>
+        <br>
+        <input class="my-color-picker" type="text" id="<?php echo $this->get_field_id( 'font_color' ); ?>" name="<?php echo $this->get_field_name( 'font_color' ); ?>" 
+        value="<?php echo esc_attr( $instance['font_color'] ); ?>" /> 
+
+	</p>
+
+	<p>
 		<label for="<?php echo esc_attr( $this->get_field_name('description')); ?>">
 				<?php _e('Page Description:'); ?>
 		</label>
@@ -179,64 +262,22 @@ class img_page_widget extends WP_Widget {
 
     $image_media_id = $instance['image_id'];
 
-     //var_dump($image_media_id) ?>
+    ?>
+		
 
-			<div class="box-widget">
+			<?php $parsed_url = esc_url( wp_get_attachment_url($image_media_id) ); ?>
 
-			<div class="thumbbx">
+			<div class="widget-content">
 
-			<a href="<?php 
-
-			if( !empty( $instance['page_id'] ) ) { 
-
-				echo get_permalink($page->ID); 
-
-			} else if( !empty( $instance['file'] ) )  {
-
-				echo esc_attr_e($instance['file']);
-
-			} else {
-
-				_e('#');
-
-			}
-
-			?>">
-
-			<?php echo wp_get_attachment_image($image_media_id, 'widget-image'); ?>
-				
-			</a>
-			</div>
-
-						<div class="col-sm-12 widget-content">
-
-							<h3 class="title-medium title-shadow-a mb10">
-							<a href="<?php 
-
-							if( !empty( $instance['page_id'] ) ) { 
-
-									echo get_permalink($page->ID); 
-
-								} else if( !empty( $instance['file'] ) )  {
-
-									echo esc_attr_e($instance['file']);
-
-								} else {
-
-									_e('#');
-
-							}
-
-							?>">
-							<?php if( !empty( $instance['title'] ) ) { echo esc_attr_e($instance['title']); } else { echo $page->post_title; }  ?>												 	
-							</a>
+							<h3 class="title-medium title-shadow-a mb10" style="color: <?php echo esc_attr_e( $instance['font_color'] );  ?>;">
+							<?php if( !empty( $instance['title'] ) ) { echo esc_attr_e($instance['title']); } else { echo $page->post_title; }  ?>											
 							</h3>
 
-							<p>
+							<p style="color: <?php echo esc_attr_e( $instance['font_color'] );  ?>;">
 							<?php if( !empty( $instance['description'] ) ){ echo esc_attr_e( $instance['description'] ); } else { echo $page->post_excerpt; } ?>
 							</p>
 
-							<a class="pagemore rounded-lg" target="_blank" href="<?php
+							<button class="button" onclick="location.href='<?php
 
 							if( !empty( $instance['page_id'] ) ) { 
 
@@ -253,15 +294,23 @@ class img_page_widget extends WP_Widget {
 							}
 
 
-							?>"><?php
+							?>'"><?php
 							
 							if( !empty( $instance['link_text'] ) ) { echo esc_attr_e($instance['link_text']); } 
 
-							?></a> 
-
-						</div>
+							?></button> 
 
 			</div>
+
+			<div class="background-overlay" style="background-color: <?php echo esc_attr_e( $instance['background_color'] );  ?>;"></div>
+
+			<div class="box-widget" style="background-image: url('<?php echo $parsed_url; ?>'); ">
+
+			</div>
+
+
+
+
 	
 
 	<?php
@@ -272,6 +321,18 @@ class img_page_widget extends WP_Widget {
 
 }
 
-add_action( 'widgets_init', create_function('', 'return register_widget("img_page_widget");') );
+add_action( 'admin_init','callback_for_setting_up_scripts');
+add_action('wp_enqueue_scripts', 'callback_for_setting_up_scripts');
+
+function callback_for_setting_up_scripts() {
+
+		wp_register_style( 'page-widget-style', plugins_url( 'css/image-page-widget.css', __FILE__));
+	    wp_enqueue_style( 'page-widget-style' );
+
+}
+
+add_action( 'widgets_init',	function(){
+	return register_widget("img_page_widget");
+});
 
 ?>

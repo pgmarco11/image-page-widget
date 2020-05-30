@@ -1,0 +1,21 @@
+.widget-content {
+    margin: 0 auto;
+    z-index: 1;
+    position: relative;
+    padding: 30px;
+}
+.img_page_widget {
+	position: relative;
+	height: 280px;
+}
+.background-overlay, .box-widget {
+	position: absolute;
+	width: 100%;
+	top: 0;
+	height: 280px;
+	border-radius: 16px;
+}
+.box-widget {
+    background-position: center center;
+    opacity: 0.3;
+}

@@ -5,22 +5,7 @@ jQuery(document).ready(function($){
 
     var widgetList = new Array();
 
-    function getSidebarWidgetCount( sidebarId ) {
-        var deferred = jQuery.Deferred();
-        wp.customize( 'sidebars_widgets[' + sidebarId + ']', function( sidebarSetting ) {
-            deferred.resolve( sidebarSetting.get().length );
-        } );
-        return deferred.promise();
-    }
-
-    getSidebarWidgetCount( 'home-main' ).done( function( count ){
-        console.info( count );
-    } );
-
-    console.log(widgetCount);
-
-
-     $('input#select_img').on('click', function(event){
+     $('input.select-img').on('click', function(event){
    
         event.preventDefault();
 
@@ -44,7 +29,7 @@ jQuery(document).ready(function($){
 
             attachment = custom_uploader.state().get('selection').first().toJSON();
 
-            $('#linked_image').val(attachment.url);
+            $('input.image-page-input').val(attachment.url);
             $('input.img_id').val(attachment.id);
             $('#upload_img_preview.img').attr('src', attachment.url);
 
@@ -57,7 +42,7 @@ jQuery(document).ready(function($){
 
     });
 
-   $('input#select_file').on('click', function(event){
+   $('input.select-file').on('click', function(event){
        
         event.preventDefault();
 
